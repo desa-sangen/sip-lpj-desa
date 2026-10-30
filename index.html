@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIP-LPJ Desa Sukamaju (Input Pajak Manual %)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-slate-950 font-sans text-slate-100 antialiased h-screen overflow-hidden">
+
+  <div class="flex h-screen">
+    
+    <!-- SIDEBAR NAVIGATION -->
+    <aside class="w-64 bg-slate-900 border-r border-slate-800 flex flex-col justify-between shrink-0">
+      <div>
+        <div class="p-4 border-b border-slate-800 flex items-center space-x-3">
+          <div class="w-9 h-9 bg-emerald-500 rounded-lg flex items-center justify-center text-slate-950 font-bold">
+            <i class="fa-solid fa-building-columns"></i>
+          </div>
+          <div>
+            <h1 class="font-bold text-sm tracking-wide text-white">SIP-LPJ DESA</h1>
+            <p class="text-[11px] text-slate-400">Pemdes SANGEN • 2026</p>
+          </div>
+        </div>
+
+        <nav class="p-3 space-y-1 text-xs font-medium" id="sidebarMenu">
+          <button data-target="panelDashboard" class="nav-btn w-full flex items-center space-x-3 bg-emerald-600 text-white px-3 py-2.5 rounded-lg font-semibold transition">
+            <i class="fa-solid fa-chart-pie w-4"></i> <span>Dashboard Proyek</span>
+          </button>
+          <button data-target="panelRab" class="nav-btn w-full flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-3 py-2.5 rounded-lg transition">
+            <i class="fa-solid fa-file-invoice-dollar w-4"></i> <span>Master RAB</span>
+          </button>
+          <button data-target="panelLpj" class="nav-btn w-full flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-3 py-2.5 rounded-lg transition">
+            <i class="fa-solid fa-receipt w-4"></i> <span>Belanja & LPJ</span>
+          </button>
+          <button data-target="panelPajak" class="nav-btn w-full flex items-center space-x-3 text-slate-400 hover:bg-slate-800 hover:text-white px-3 py-2.5 rounded-lg transition">
+            <i class="fa-solid fa-calculator w-4"></i> <span>Rekap Pajak</span>
+          </button>
+        </nav>
+      </div>
+
+      <div class="p-3 border-t border-slate-800 text-[11px] text-slate-500 flex flex-col space-y-2">
+        <div class="flex justify-between items-center">
+          <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Auto-Saved</span>
+          <button onclick="resetDataDefault()" class="text-xs text-red-400 hover:underline">Reset Data</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 overflow-y-auto bg-slate-950 flex flex-col">
+      
+      <!-- TOP BAR / HEADER -->
+      <header class="bg-slate-900 border-b border-slate-800 px-6 py-3 flex justify-between items-center sticky top-0 z-20">
+        <div class="flex items-center space-x-4">
+          <span class="text-xs bg-slate-800 border border-slate-700 text-slate-300 px-3 py-1 rounded-md font-mono">
+            🏛️ Pemerintah Desa Sangen | APBDes 2026
+          </span>
+        </div>
+        <div class="flex items-center space-x-4">
+          <div class="relative">
+            <i class="fa-solid fa-magnifying-glass text-slate-500 absolute left-3 top-2.5 text-xs"></i>
+            <input type="text" id="searchInput" placeholder="Cari Uraian / Toko / Struk..." class="bg-slate-950 border border-slate-800 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 w-64">
+          </div>
+          <div class="flex items-center space-x-2 text-xs text-slate-300 bg-slate-800 px-3 py-1.5 rounded-lg border border-slate-700">
+            <i class="fa-solid fa-user text-emerald-400"></i>
+            <span>TPK Pembangunan</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- BODY CONTAINER -->
+      <div class="p-6 space-y-6">
+        
+        <!-- PROYEK TITLE & CONTROL -->
+        <div class="border-b border-slate-800 pb-3 flex justify-between items-end">
+          <div>
+            <span class="text-[11px] font-mono text-emerald-400 font-semibold uppercase tracking-wider">PROYEK AKTIF</span>
+            <h2 class="text-xl font-bold text-white">Pembangunan Paving Jalan Dsn. III (DDS 2026)</h2>
+          </div>
+          <div class="flex space-x-2">
+            <button id="btnOpenModalRab" class="bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 text-xs font-semibold px-3 py-2 rounded-lg flex items-center space-x-2 transition">
+              <i class="fa-solid fa-plus text-emerald-400"></i> <span>Tambah Item RAB Manual</span>
+            </button>
+            <button id="btnOpenModalLPJ" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-lg flex items-center space-x-2 transition">
+              <i class="fa-solid fa-receipt"></i> <span>Input Transaksi LPJ Baru</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 1. PANEL DASHBOARD PROYEK -->
+        <div id="panelDashboard" class="tab-panel space-y-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">TOTAL PAGU RAB</span>
+              <div id="cardPaguTotal" class="text-2xl font-bold text-white mt-1">Rp 0</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">REALISASI BELANJA LPJ</span>
+              <div id="cardRealisasiTotal" class="text-2xl font-bold text-emerald-400 mt-1">Rp 0</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl">
+              <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">SISA ANGGARAN DANA</span>
+              <div id="cardSisaTotal" class="text-2xl font-bold text-blue-400 mt-1">Rp 0</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl space-y-4">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">STATUS PROGRES REALISASI (PHYSICAL VS FINANCIAL)</h3>
+            <div>
+              <div class="flex justify-between text-xs mb-1 font-mono">
+                <span class="text-slate-400">Fisik (Lapangan) : Paving 150m²</span>
+                <span class="text-emerald-400 font-bold">75%</span>
+              </div>
+              <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                <div class="bg-emerald-500 h-full rounded-full" style="width: 75%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1 font-mono">
+                <span class="text-slate-400">Keuangan (LPJ) : Realisasi Belanja</span>
+                <span id="txtProgresKeuangan" class="text-blue-400 font-bold">0%</span>
+              </div>
+              <div class="w-full bg-slate-950 h-3 rounded-full overflow-hidden border border-slate-800">
+                <div id="barProgresKeuangan" class="bg-blue-500 h-full rounded-full" style="width: 0%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. PANEL MASTER RAB -->
+        <div id="panelRab" class="tab-panel hidden space-y-4">
+          <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">MASTER ANGGARAN RAB PROYEK</h3>
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded text-slate-200 border border-slate-700">
+              <i class="fa-solid fa-print text-red-400 mr-1"></i> Cetak RAB
+            </button>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <th class="p-3 text-center">No</th>
+                  <th class="p-3">Uraian Material / Jasa</th>
+                  <th class="p-3">Volume</th>
+                  <th class="p-3">Harga Satuan</th>
+                  <th class="p-3">Total Pagu RAB</th>
+                  <th class="p-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMasterRab" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 3. PANEL BELANJA & LPJ -->
+        <div id="panelLpj" class="tab-panel hidden space-y-4">
+          <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">MONITORING ANGGARAN & REALISASI LPJ</h3>
+            <button onclick="window.print()" class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-1.5 rounded text-slate-200 border border-slate-700">
+              <i class="fa-solid fa-print text-blue-400 mr-1"></i> Cetak LPJ
+            </button>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <th class="p-3 text-center">No</th>
+                  <th class="p-3">Uraian RAB</th>
+                  <th class="p-3">Pagu RAB</th>
+                  <th class="p-3">Realisasi Belanja</th>
+                  <th class="p-3">Sisa Kuota</th>
+                  <th class="p-3 text-center">Status Validasi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyRab" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 4. PANEL REKAP PAJAK -->
+        <div id="panelPajak" class="tab-panel hidden space-y-4">
+          <div class="flex justify-between items-center bg-slate-900 p-4 rounded-xl border border-slate-800">
+            <h3 class="text-xs font-bold text-slate-300 uppercase tracking-wider">REKAPITULASI PEMOTONGAN PAJAK</h3>
+            <span class="text-[11px] text-emerald-400 font-mono">e-Billing Status: Ready</span>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <table class="w-full text-left border-collapse text-xs font-mono">
+              <thead>
+                <tr class="bg-slate-950 text-slate-400 border-b border-slate-800">
+                  <th class="p-3">Tgl Transaksi</th>
+                  <th class="p-3">No. Struk</th>
+                  <th class="p-3">Toko / Penyedia</th>
+                  <th class="p-3 text-right">Bruto (Rp)</th>
+                  <th class="p-3 text-right">PPN</th>
+                  <th class="p-3 text-right">PPh</th>
+                  <th class="p-3 text-right">Netto (Dibayar)</th>
+                  <th class="p-3 text-center">Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyPajak" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
+              <tfoot>
+                <tr class="bg-slate-950 font-bold border-t border-slate-800 text-white">
+                  <td colspan="3" class="p-3 text-slate-400 uppercase">TOTAL TERPOTONG PAJAK</td>
+                  <td id="footBruto" class="p-3 text-right">Rp 0</td>
+                  <td id="footPpn" class="p-3 text-right text-amber-400">Rp 0</td>
+                  <td id="footPph" class="p-3 text-right text-amber-400">Rp 0</td>
+                  <td id="footNetto" class="p-3 text-right text-emerald-400">Rp 0</td>
+                  <td></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- MODAL 1: FORM INPUT/EDIT MASTER RAB MANUAL -->
+  <div id="modalRAB" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-xl shadow-2xl overflow-hidden text-slate-200">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-boxes-packing text-emerald-400"></i>
+          <h3 class="font-bold text-white text-base" id="titleModalRAB">Input Item RAB Manual</h3>
+        </div>
+        <button id="btnCloseModalRAB" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="formRAB" class="p-6 space-y-4 text-xs font-mono">
+        <input type="hidden" id="editRabIndex" value="-1">
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold">URAIAN MATERIAL / JASA / UPAH</label>
+          <input type="text" id="rabUraian" placeholder="Contoh: Semen Gresik PC 50kg" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">VOLUME</label>
+            <input type="number" id="rabVol" min="1" placeholder="300" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">SATUAN</label>
+            <input type="text" id="rabSat" placeholder="Sak / M3 / HOK" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold">HARGA SATUAN (RP)</label>
+          <input type="number" id="rabHargaSat" min="1" placeholder="75000" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-sm font-bold focus:outline-none focus:border-emerald-500">
+        </div>
+        <div class="bg-slate-950 p-3 rounded-lg border border-slate-800 flex justify-between items-center">
+          <span class="text-slate-400">Total Pagu RAB:</span>
+          <span id="txtRabTotalPreview" class="text-emerald-400 font-bold text-sm">Rp 0</span>
+        </div>
+        <div class="border-t border-slate-800 pt-4 flex justify-end space-x-3">
+          <button type="button" id="btnCancelModalRAB" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300">Batal</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center space-x-2">
+            <i class="fa-solid fa-floppy-disk"></i> <span>Simpan Item RAB</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 2: FORM INPUT TRANSAKSI LPJ & PAJAK MANUAL % -->
+  <div id="modalLPJ" class="fixed inset-0 z-50 hidden flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+    <div class="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden text-slate-200">
+      <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950">
+        <div class="flex items-center space-x-2">
+          <i class="fa-solid fa-receipt text-emerald-400"></i>
+          <h3 class="font-bold text-white text-base">Form Transaksi LPJ Baru</h3>
+        </div>
+        <button id="btnCloseModalLPJ" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <form id="formLPJ" class="p-6 space-y-4 text-xs font-mono">
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold">PILIH ITEM MATERIAL / JASA (RAB)</label>
+          <select id="selectRab" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500"></select>
+        </div>
+
+        <div id="infoRab" class="hidden bg-slate-950 border border-slate-800 p-3 rounded-lg flex justify-between text-[11px]">
+          <div><span class="text-slate-500">Pagu Item:</span> <span id="txtPagu" class="text-white">Rp 0</span></div>
+          <div><span class="text-slate-500">Telah Dipakai:</span> <span id="txtTerpakai" class="text-white">Rp 0</span></div>
+          <div><span class="text-slate-500">Sisa Kuota:</span> <span id="txtSisa" class="font-bold">Rp 0</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div>
+            <label class="block text-slate-400 mb-1">TGL TRANSAKSI</label>
+            <input type="date" id="tglTransaksi" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">NO. STRUK / NOTA</label>
+            <input type="text" id="noStruk" placeholder="STR-001" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-slate-400 mb-1">TOKO / PENYEDIA</label>
+            <input type="text" id="toko" placeholder="TB. Jaya Abadi" required class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-slate-400 mb-1 font-semibold">NOMINAL BRUTO / NOTA (RP)</label>
+          <input type="number" id="bruto" min="1" required placeholder="0" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-white text-base font-bold focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <!-- INPUT PAJAK % FULL MANUAL -->
+        <div class="bg-slate-950 border border-slate-800 p-3.5 rounded-lg space-y-3">
+          <div class="flex items-center space-x-2 text-slate-300 font-semibold">
+            <i class="fa-solid fa-calculator text-emerald-400"></i>
+            <span>INPUT PERSENTASE PAJAK MANUAL (%)</span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- INPUT PPN % MANUAL -->
+            <div>
+              <label class="block text-slate-400 mb-1">PPN (%)</label>
+              <div class="relative">
+                <input type="number" step="0.1" id="inputPpnRate" value="11" placeholder="11" class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-1.5 text-white pr-7 focus:outline-none focus:border-emerald-500 font-bold">
+                <span class="absolute right-3 top-1.5 text-slate-500 font-bold">%</span>
+              </div>
+              <span class="text-[10px] text-slate-500 mt-0.5 block">Isi 0 jika tanpa PPN</span>
+            </div>
+
+            <!-- INPUT PPH % MANUAL -->
+            <div>
+              <label class="block text-slate-400 mb-1">PPh (%)</label>
+              <div class="relative">
+                <input type="number" step="0.1" id="inputPphRate" value="1.5" placeholder="1.5" class="w-full bg-slate-900 border border-slate-800 rounded px-3 py-1.5 text-white pr-7 focus:outline-none focus:border-emerald-500 font-bold">
+                <span class="absolute right-3 top-1.5 text-slate-500 font-bold">%</span>
+              </div>
+              <span class="text-[10px] text-slate-500 mt-0.5 block">Misal: 1.5 (Brg), 2 (Jasa), 5 (Honor)</span>
+            </div>
+          </div>
+
+          <!-- HASIL KALKULASI PAJAK REALTIME -->
+          <div class="border-t border-slate-800 pt-2.5 grid grid-cols-3 gap-2 text-[11px] text-right">
+            <div>
+              <span class="text-slate-500 block text-left">PPN Terpotong:</span>
+              <span id="modalTxtPpn" class="text-amber-400 font-semibold">Rp 0</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-left">PPh Terpotong:</span>
+              <span id="modalTxtPph" class="text-amber-400 font-semibold">Rp 0</span>
+            </div>
+            <div>
+              <span class="text-slate-500 block text-left">Netto Dibayar:</span>
+              <span id="modalTxtNetto" class="text-emerald-400 font-semibold">Rp 0</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="alertError" class="hidden bg-red-950/80 border border-red-800/80 text-red-300 p-3 rounded-lg flex items-center space-x-2 text-[11px]">
+          <i class="fa-solid fa-circle-exclamation text-red-400 shrink-0"></i>
+          <span id="txtError">Nominal belanja melebihi sisa kuota RAB!</span>
+        </div>
+
+        <div class="border-t border-slate-800 pt-4 flex justify-end space-x-3">
+          <button type="button" id="btnCancelModalLPJ" class="px-4 py-2 rounded-lg bg-slate-800 text-slate-300 font-semibold">Batal</button>
+          <button type="submit" id="btnSubmit" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-semibold flex items-center space-x-2">
+            <i class="fa-solid fa-floppy-disk"></i> <span>Simpan Transaksi LPJ</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    const DEFAULT_RAB = [
+      { id: "RAB-01", uraian: "Semen PC 50kg", vol: 300, sat: "Sak", hargaSat: 75000, total: 22500000 },
+      { id: "RAB-02", uraian: "Pasir Pasang", vol: 40, sat: "M³", hargaSat: 200000, total: 8000000 },
+      { id: "RAB-03", uraian: "Paving Block K-225", vol: 1000, sat: "M²", hargaSat: 90000, total: 90000000 },
+      { id: "RAB-04", uraian: "Upah Tukang (2 Orang)", vol: 60, sat: "HOK", hargaSat: 150000, total: 9000000 }
+    ];
+
+    const DEFAULT_TRANSAKSI = [
+      { id: 1, rabId: "RAB-01", tgl: "20/08/2026", struk: "STR-001", toko: "TB. Jaya Abadi", bruto: 15000000, ppnRate: 11, pphRate: 1.5, ppn: 1486486, pph: 202703, netto: 13310811 },
+      { id: 2, rabId: "RAB-02", tgl: "22/08/2026", struk: "STR-004", toko: "CV. Pasir Berkah", bruto: 8000000, ppnRate: 11, pphRate: 1.5, ppn: 792792, pph: 108108, netto: 7099100 },
+      { id: 3, rabId: "RAB-03", tgl: "23/08/2026", struk: "STR-005", toko: "PT. Paving Jaya", bruto: 58500000, ppnRate: 11, pphRate: 1.5, ppn: 5797297, pph: 790541, netto: 51912162 }
+    ];
+
+    let masterRAB = JSON.parse(localStorage.getItem('sip_lpj_rab')) || DEFAULT_RAB;
+    let listTransaksi = JSON.parse(localStorage.getItem('sip_lpj_trx')) || DEFAULT_TRANSAKSI;
+
+    function saveData() {
+      localStorage.setItem('sip_lpj_rab', JSON.stringify(masterRAB));
+      localStorage.setItem('sip_lpj_trx', JSON.stringify(listTransaksi));
+    }
+
+    function resetDataDefault() {
+      if(confirm("Kembalikan data ke awal (Reset)?")) {
+        localStorage.removeItem('sip_lpj_rab');
+        localStorage.removeItem('sip_lpj_trx');
+        masterRAB = [...DEFAULT_RAB];
+        listTransaksi = [...DEFAULT_TRANSAKSI];
+        saveData();
+        renderApp();
+      }
+    }
+
+    const formatRp = (num) => 'Rp ' + Number(num).toLocaleString('id-ID');
+
+    // TAB NAVIGATION SWITCHING LOGIC
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const tabPanels = document.querySelectorAll('.tab-panel');
+
+    navButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        navButtons.forEach(btn => {
+          btn.classList.remove('bg-emerald-600', 'text-white', 'font-semibold');
+          btn.classList.add('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+        });
+        button.classList.remove('text-slate-400', 'hover:bg-slate-800', 'hover:text-white');
+        button.classList.add('bg-emerald-600', 'text-white', 'font-semibold');
+
+        tabPanels.forEach(panel => {
+          panel.id === targetId ? panel.classList.remove('hidden') : panel.classList.add('hidden');
+        });
+      });
+    });
+
+    // RENDER APP ENGINE
+    function renderApp(filterQuery = '') {
+      let grandTotalPagu = masterRAB.reduce((acc, r) => acc + r.total, 0);
+      let grandTotalRealisasi = listTransaksi.reduce((acc, t) => acc + t.bruto, 0);
+      let grandTotalSisa = grandTotalPagu - grandTotalRealisasi;
+
+      document.getElementById('cardPaguTotal').innerText = formatRp(grandTotalPagu);
+      document.getElementById('cardRealisasiTotal').innerText = formatRp(grandTotalRealisasi);
+      document.getElementById('cardSisaTotal').innerText = formatRp(grandTotalSisa);
+
+      let persenKeuangan = grandTotalPagu > 0 ? ((grandTotalRealisasi / grandTotalPagu) * 100).toFixed(1) : 0;
+      document.getElementById('txtProgresKeuangan').innerText = `${persenKeuangan}%`;
+      document.getElementById('barProgresKeuangan').style.width = `${persenKeuangan}%`;
+
+      // Render Table Master RAB
+      document.getElementById('tbodyMasterRab').innerHTML = masterRAB.map((item, idx) => `
+        <tr class="hover:bg-slate-800/30">
+          <td class="p-3 text-center text-slate-500">${idx + 1}</td>
+          <td class="p-3 font-semibold text-white">${item.uraian}</td>
+          <td class="p-3">${item.vol} ${item.sat}</td>
+          <td class="p-3">${formatRp(item.hargaSat)}</td>
+          <td class="p-3 font-semibold text-emerald-400">${formatRp(item.total)}</td>
+          <td class="p-3 text-center space-x-1">
+            <button onclick="editRabItem(${idx})" class="text-amber-400 hover:text-amber-300 p-1"><i class="fa-solid fa-pen-to-square"></i></button>
+            <button onclick="hapusRabItem('${item.id}')" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      // Render Monitoring RAB vs LPJ
+      document.getElementById('tbodyRab').innerHTML = masterRAB.map((item, idx) => {
+        let realisasi = listTransaksi.filter(t => t.rabId === item.id).reduce((sum, t) => sum + t.bruto, 0);
+        let sisa = item.total - realisasi;
+        return `
+          <tr class="hover:bg-slate-800/30">
+            <td class="p-3 text-center text-slate-500">${idx + 1}</td>
+            <td class="p-3 font-semibold text-white">${item.uraian}</td>
+            <td class="p-3">${formatRp(item.total)}</td>
+            <td class="p-3 font-semibold text-slate-200">${formatRp(realisasi)}</td>
+            <td class="p-3 ${sisa <= 0 ? 'text-slate-500' : 'text-emerald-400 font-semibold'}">${formatRp(sisa)}</td>
+            <td class="p-3 text-center">${sisa <= 0 ? '🟡 HABIS' : '🟢 AMAN'}</td>
+          </tr>
+        `;
+      }).join('');
+
+      // Render Rekap Pajak
+      let query = filterQuery.toLowerCase();
+      let filteredTrx = listTransaksi.filter(t => {
+        let rabItem = masterRAB.find(r => r.id === t.rabId);
+        let uraian = rabItem ? rabItem.uraian.toLowerCase() : '';
+        return t.struk.toLowerCase().includes(query) || t.toko.toLowerCase().includes(query) || uraian.includes(query);
+      });
+
+      document.getElementById('tbodyPajak').innerHTML = filteredTrx.map(t => `
+        <tr class="hover:bg-slate-800/30">
+          <td class="p-3 text-slate-400">${t.tgl}</td>
+          <td class="p-3 font-semibold text-emerald-400">${t.struk}</td>
+          <td class="p-3 font-semibold text-white">${t.toko}</td>
+          <td class="p-3 text-right font-semibold">${formatRp(t.bruto)}</td>
+          <td class="p-3 text-right text-amber-400">${formatRp(t.ppn)} <span class="text-[10px] text-slate-500">(${t.ppnRate || 0}%)</span></td>
+          <td class="p-3 text-right text-amber-400">${formatRp(t.pph)} <span class="text-[10px] text-slate-500">(${t.pphRate || 0}%)</span></td>
+          <td class="p-3 text-right text-emerald-400 font-semibold">${formatRp(t.netto)}</td>
+          <td class="p-3 text-center">
+            <button onclick="hapusTransaksi(${t.id})" class="text-red-400 hover:text-red-300 p-1"><i class="fa-solid fa-trash-can"></i></button>
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('footBruto').innerText = formatRp(filteredTrx.reduce((a, b) => a + b.bruto, 0));
+      document.getElementById('footPpn').innerText = formatRp(filteredTrx.reduce((a, b) => a + b.ppn, 0));
+      document.getElementById('footPph').innerText = formatRp(filteredTrx.reduce((a, b) => a + b.pph, 0));
+      document.getElementById('footNetto').innerText = formatRp(filteredTrx.reduce((a, b) => a + b.netto, 0));
+
+      populateSelectRab();
+      saveData();
+    }
+
+    function populateSelectRab() {
+      const selectRab = document.getElementById('selectRab');
+      selectRab.innerHTML = `<option value="">-- Pilih Rekening RAB --</option>` + masterRAB.map(r => `<option value="${r.id}">${r.uraian} (Pagu: ${formatRp(r.total)})</option>`).join('');
+    }
+
+    // HANDLER MODAL RAB MANUAL
+    const modalRAB = document.getElementById('modalRAB');
+    document.getElementById('btnOpenModalRab').onclick = () => {
+      document.getElementById('editRabIndex').value = "-1";
+      document.getElementById('titleModalRAB').innerText = "Input Item RAB Manual";
+      document.getElementById('formRAB').reset();
+      document.getElementById('txtRabTotalPreview').innerText = "Rp 0";
+      modalRAB.classList.remove('hidden');
+    };
+    document.getElementById('btnCloseModalRAB').onclick = () => modalRAB.classList.add('hidden');
+    document.getElementById('btnCancelModalRAB').onclick = () => modalRAB.classList.add('hidden');
+
+    function calcRabTotalPreview() {
+      const vol = Number(document.getElementById('rabVol').value) || 0;
+      const hargaSat = Number(document.getElementById('rabHargaSat').value) || 0;
+      document.getElementById('txtRabTotalPreview').innerText = formatRp(vol * hargaSat);
+    }
+    document.getElementById('rabVol').addEventListener('input', calcRabTotalPreview);
+    document.getElementById('rabHargaSat').addEventListener('input', calcRabTotalPreview);
+
+    document.getElementById('formRAB').onsubmit = (e) => {
+      e.preventDefault();
+      const editIdx = Number(document.getElementById('editRabIndex').value);
+      const uraian = document.getElementById('rabUraian').value;
+      const vol = Number(document.getElementById('rabVol').value);
+      const sat = document.getElementById('rabSat').value;
+      const hargaSat = Number(document.getElementById('rabHargaSat').value);
+      const total = vol * hargaSat;
+
+      if (editIdx >= 0) {
+        masterRAB[editIdx] = { ...masterRAB[editIdx], uraian, vol, sat, hargaSat, total };
+      } else {
+        const id = 'RAB-' + String(masterRAB.length + 1).padStart(2, '0');
+        masterRAB.push({ id, uraian, vol, sat, hargaSat, total });
+      }
+
+      modalRAB.classList.add('hidden');
+      renderApp();
+    };
+
+    window.editRabItem = (idx) => {
+      const item = masterRAB[idx];
+      document.getElementById('editRabIndex').value = idx;
+      document.getElementById('titleModalRAB').innerText = "Edit Item RAB";
+      document.getElementById('rabUraian').value = item.uraian;
+      document.getElementById('rabVol').value = item.vol;
+      document.getElementById('rabSat').value = item.sat;
+      document.getElementById('rabHargaSat').value = item.hargaSat;
+      calcRabTotalPreview();
+      modalRAB.classList.remove('hidden');
+    };
+
+    window.hapusRabItem = (rabId) => {
+      if (listTransaksi.some(t => t.rabId === rabId)) {
+        alert("Tidak bisa menghapus item RAB ini karena sudah ada transaksi LPJ yang menggunakannya!");
+        return;
+      }
+      if (confirm("Hapus item RAB ini?")) {
+        masterRAB = masterRAB.filter(r => r.id !== rabId);
+        renderApp();
+      }
+    };
+
+    // HANDLER MODAL LPJ & PAJAK % MANUAL
+    const modalLPJ = document.getElementById('modalLPJ');
+    document.getElementById('btnOpenModalLPJ').onclick = () => {
+      modalLPJ.classList.remove('hidden');
+      document.getElementById('tglTransaksi').value = new Date().toISOString().split('T')[0];
+      updateModalCalculations();
+    };
+    document.getElementById('btnCloseModalLPJ').onclick = () => modalLPJ.classList.add('hidden');
+    document.getElementById('btnCancelModalLPJ').onclick = () => modalLPJ.classList.add('hidden');
+
+    function updateModalCalculations() {
+      const selectedId = document.getElementById('selectRab').value;
+      const bruto = Number(document.getElementById('bruto').value) || 0;
+      
+      const ppnRate = Number(document.getElementById('inputPpnRate').value) || 0;
+      const pphRate = Number(document.getElementById('inputPphRate').value) || 0;
+
+      // Hitung Rumus PPN & PPh Manual
+      let dpp = ppnRate > 0 ? bruto / (1 + (ppnRate / 100)) : bruto;
+      let ppn = Math.round(dpp * (ppnRate / 100));
+      let pph = Math.round(dpp * (pphRate / 100));
+      let netto = bruto - (ppn + pph);
+
+      document.getElementById('modalTxtPpn').innerText = formatRp(ppn);
+      document.getElementById('modalTxtPph').innerText = formatRp(pph);
+      document.getElementById('modalTxtNetto').innerText = formatRp(netto);
+
+      // Cek Sisa Kuota RAB
+      const infoRab = document.getElementById('infoRab');
+      const alertError = document.getElementById('alertError');
+      const btnSubmit = document.getElementById('btnSubmit');
+
+      if (selectedId) {
+        const rabItem = masterRAB.find(r => r.id === selectedId);
+        const terpakai = listTransaksi.filter(t => t.rabId === selectedId).reduce((sum, t) => sum + t.bruto, 0);
+        const sisa = rabItem.total - terpakai;
+
+        infoRab.classList.remove('hidden');
+        document.getElementById('txtPagu').innerText = formatRp(rabItem.total);
+        document.getElementById('txtTerpakai').innerText = formatRp(terpakai);
+        const txtSisaEl = document.getElementById('txtSisa');
+        txtSisaEl.innerText = formatRp(sisa);
+        txtSisaEl.className = sisa <= 0 ? 'text-red-400 font-bold' : 'text-emerald-400 font-bold';
+
+        if (bruto > sisa) {
+          alertError.classList.remove('hidden');
+          document.getElementById('txtError').innerText = `Nominal melebihi sisa kuota RAB! (Sisa: ${formatRp(sisa)})`;
+          btnSubmit.disabled = true;
+          btnSubmit.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+          alertError.classList.add('hidden');
+          btnSubmit.disabled = false;
+          btnSubmit.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
+      } else {
+        infoRab.classList.add('hidden');
+        alertError.classList.add('hidden');
+      }
+    }
+
+    ['selectRab', 'bruto', 'inputPpnRate', 'inputPphRate'].forEach(id => {
+      document.getElementById(id).addEventListener('input', updateModalCalculations);
+      document.getElementById(id).addEventListener('change', updateModalCalculations);
+    });
+
+    // Submit Transaksi LPJ
+    document.getElementById('formLPJ').onsubmit = (e) => {
+      e.preventDefault();
+      const bruto = Number(document.getElementById('bruto').value);
+      const ppnRate = Number(document.getElementById('inputPpnRate').value) || 0;
+      const pphRate = Number(document.getElementById('inputPphRate').value) || 0;
+
+      let dpp = ppnRate > 0 ? bruto / (1 + (ppnRate / 100)) : bruto;
+      let ppn = Math.round(dpp * (ppnRate / 100));
+      let pph = Math.round(dpp * (pphRate / 100));
+
+      listTransaksi.push({
+        id: Date.now(),
+        rabId: document.getElementById('selectRab').value,
+        tgl: document.getElementById('tglTransaksi').value.split('-').reverse().join('/'),
+        struk: document.getElementById('noStruk').value,
+        toko: document.getElementById('toko').value,
+        bruto: bruto,
+        ppnRate: ppnRate,
+        pphRate: pphRate,
+        ppn: ppn,
+        pph: pph,
+        netto: bruto - (ppn + pph)
+      });
+
+      renderApp();
+      modalLPJ.classList.add('hidden');
+      e.target.reset();
+    };
+
+    window.hapusTransaksi = (id) => {
+      if(confirm("Hapus transaksi ini?")) {
+        listTransaksi = listTransaksi.filter(t => t.id !== id);
+        renderApp(document.getElementById('searchInput').value);
+      }
+    };
+
+    document.getElementById('searchInput').addEventListener('input', (e) => renderApp(e.target.value));
+
+    // INIT
+    renderApp();
+  </script>
+</body>
+</html>
